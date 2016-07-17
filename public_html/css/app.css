@@ -28,6 +28,9 @@ label {
     width: 4em; }
   #main-wrapper .col.puntaje {
     width: 3em; }
+  #main-wrapper .config-partida {
+    font-size: 1.2em;
+    cursor: pointer; }
   #main-wrapper tbody .col {
     padding: 0; }
   #main-wrapper tbody .jugador {
@@ -43,5 +46,10 @@ label {
     #main-wrapper .table-responsive .table {
       border: none;
       margin-bottom: 0; }
+
+#config-partida ul {
+  padding-left: 0; }
+#config-partida ul, #config-partida li {
+  list-style: none; }
 
 /*# sourceMappingURL=app.css.map */

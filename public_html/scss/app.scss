@@ -38,6 +38,11 @@ label {
     .col.puntaje {
         width: 3em;
     }
+    
+    .config-partida {
+        font-size: 1.2em;
+        cursor: pointer;
+    }
     tbody {
         .col {
             padding: 0;
@@ -64,4 +69,13 @@ label {
         }
     }
     
+}
+
+#config-partida {
+    ul {
+        padding-left: 0;
+    }
+    ul, li {
+        list-style: none;
+    } 
 }
