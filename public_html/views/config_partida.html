@@ -1,0 +1,27 @@
+<div id='config-partida'>
+    <div class="modal-header">
+        <h3 class="modal-title">Configuración de partida</h3>
+    </div>
+    <div class="modal-body">
+        <ul>
+            <li ng-repeat="ronda in getRondas() track by $index" class='form-group'>
+                <span class='input-group'>
+                    <label class='input-group-addon'>Ronda n° {{ $index + 1 }}:</label>
+                    <input class='form-control' type='number' ng-model='ronda.numero_cartas' min='1'/>
+                    <label class='input-group-addon' ng-click='removerRonda(ronda)'><i class='fa fa-remove'></i></label>
+                </span>
+            </li>
+            <li class='form-group'>
+                <span class='input-group'>
+                    <label class='input-group-addon'>Agregar ronda:</label>
+                    <input class='form-control' type='number' ng-model='nueva_ronda.numero_cartas' min='1'/>
+                    <label class='input-group-addon' ng-click='agregarRonda()'><i class='fa fa-check'></i></label>
+                </span>
+            </li>
+        </ul>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" type="button" ng-click="ok()">OK</button>
+        <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
+    </div>
+</div>
