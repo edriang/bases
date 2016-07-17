@@ -1,0 +1,47 @@
+html {
+  font-size: 100%; }
+
+body {
+  font-size: 62.5%; }
+
+html,
+body {
+  margin: 0;
+  padding: 0; }
+
+label {
+  font-size: 1.3em; }
+
+#main-wrapper {
+  /*max-width: 120em;*/
+  padding: 2em 3em 4em; }
+  #main-wrapper .ronda {
+    width: 8em; }
+  #main-wrapper .numero_cartas {
+    width: 3.5em;
+    border: none;
+    padding: 0; }
+  #main-wrapper th {
+    text-align: center;
+    background: #efefef; }
+  #main-wrapper .col.jugador {
+    width: 4em; }
+  #main-wrapper .col.puntaje {
+    width: 3em; }
+  #main-wrapper tbody .col {
+    padding: 0; }
+  #main-wrapper tbody .jugador {
+    padding: 1em; }
+  #main-wrapper tbody .form-control {
+    border-radius: 0;
+    border: none; }
+  #main-wrapper .error,
+  #main-wrapper .error * {
+    background: rgba(255, 0, 0, 0.1); }
+  #main-wrapper .table-responsive {
+    border: 1px solid #ddd; }
+    #main-wrapper .table-responsive .table {
+      border: none;
+      margin-bottom: 0; }
+
+/*# sourceMappingURL=app.css.map */

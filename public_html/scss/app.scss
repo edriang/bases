@@ -1,0 +1,67 @@
+html {
+    font-size: 100%;
+}
+body {
+    font-size: 62.5%;
+}
+html,
+body {
+    margin: 0;
+    padding: 0;
+    
+}
+
+label {
+    font-size: 1.3em;
+}
+
+#main-wrapper {
+    /*max-width: 120em;*/
+    padding: 2em 3em 4em;
+    
+    .ronda {
+        width: 8em;
+    }
+    .numero_cartas {
+        width: 3.5em;
+        border: none;
+        padding: 0;
+
+    }
+    th {
+        text-align: center;
+        background: #efefef;
+    }
+    .col.jugador {
+        width: 4em;
+    }
+    .col.puntaje {
+        width: 3em;
+    }
+    tbody {
+        .col {
+            padding: 0;
+        }
+        .jugador {
+            padding: 1em;
+        }
+        .form-control {
+            border-radius: 0;
+            border: none;
+        }
+    }
+    
+    .error,
+    .error * {
+        background: rgba(red, 0.1);
+    }
+    .table-responsive {
+        border: 1px solid #ddd;
+        
+        .table {
+            border: none;
+            margin-bottom: 0;
+        }
+    }
+    
+}
