@@ -1,59 +1,118 @@
 (function(){
     
-    angular.module('bases', ["ui.bootstrap"])
+    angular.module('bases', ['ui.bootstrap', 'ui.router', 'ngStorage'])
+        .config(configureRoutes)
         .factory('JuegoFactory', JuegoFactory)
         .factory('RondaFactory', RondaFactory)
         .factory('ApuestaFactory', ApuestaFactory)
         .factory('JugadorFactory', JugadorFactory)
+        .factory('ConfiguracionJuegoFactory', ConfiguracionJuegoFactory)
         .service('ConfigJuegoService', ConfigJuegoService)
-        .controller('JuegoController', JuegoController)
+        .controller('ConfiguracionController', ConfiguracionController)
+        .controller('PartidaController', PartidaController)
         .controller('ConfigPartidaController', ConfigPartidaController)
         .directive('startWithZero', startWithZeroDirective);
 
+    function configureRoutes($stateProvider){
+        $stateProvider.state({
+            name: 'configuracion',
+            url: '/configurar-partida',
+            templateUrl: 'views/configuracion.html',
+            controller: 'ConfiguracionController'
+        });
+        
+        $stateProvider.state({
+            name: 'partida',
+            url: '/partida',
+            templateUrl: 'views/partida.html',
+            controller: 'PartidaController'
+        });
+    }
+    
+    function ConfiguracionJuegoFactory($localStorage, JugadorFactory){
+        function ConfiguracionJuego(init_config){
+            
+            //Defaults
+            this.numero_rondas = 5;
+            this.numero_jugadores = 2;
+            this.jugadores = [];
+            
+            initialize.apply(this);
+            
+            function initialize(){
+                
+                if(init_config){
+                    this.numero_rondas = init_config.numero_rondas;
+                    this.numero_jugadores = init_config.numero_jugadores;
+                    
+                    for(var i in init_config.jugadores){
+                        this.jugadores.push(new JugadorFactory(init_config.jugadores[i]));
+                    }
+                }
+                
+                $localStorage.configuracion = this;
+            }
+        };
+        
+        ConfiguracionJuego.restore = function(defaults){
+            var configuracion = new ConfiguracionJuego($localStorage.configuracion);
+            return configuracion;
+        };
+        
+        return ConfiguracionJuego;
+    }
+    
     function ConfigJuegoService(){
         this.bases_suman_siempre = true;
     }
 
-    function JuegoFactory(JugadorFactory, RondaFactory){
-        return function Juego(){
+    function JuegoFactory(JugadorFactory, RondaFactory, $localStorage){
+        function Juego(configuracion, init_config){
             
-            var iniciado = false,
-                rondas = [], 
-                jugadores = [];
+            var iniciado = false;
+            var rondas = [];
+        
+            //Defaults
+            this.ronda_actual = 1;
+            this.configuracion = configuracion;
+            this.rondas = rondas;
             
             this.getRondas = getRondas;
             this.getJugadores = getJugadores;
             this.getIniciado = getIniciado;
             this.obtenerPuntajeJugador = obtenerPuntajeJugador;
-            this.iniciar = iniciar;
             this.actualizarRondas = actualizarRondas;
             
-            this.rondas = rondas;
-            this.numero_rondas;
-            this.numero_jugadores;
+            initialize.apply(this);
+            
+            function initialize(){
+                
+                if(init_config){
+                    this.ronda_actual = init_config.ronda_actual;
+                    
+                    for(var i in init_config.rondas){
+                        this.rondas.push(new RondaFactory(init_config.rondas[i]));
+                    }
+                } else {
+                    crearRondas(configuracion.numero_rondas);
+                }
+                $localStorage.juego = this;
+            }
             
             function getRondas(){
-                return this.rondas;
+                return rondas;
             }
             function getJugadores(){
-                return jugadores;
+                return configuracion.jugadores;
             }
             function getIniciado(){
                 return iniciado;
             }
             
-            function iniciar(jugadores){
-                
-                crearJugadores(jugadores);
-                crearRondas(this.numero_rondas);
-                
-                iniciado = true;
-            }
-            
-            function crearJugadores(_jugadores){
-                angular.forEach(_jugadores, function(nombre, id){
-                    jugadores.push(new JugadorFactory(id, nombre));
-                });
+            function crearJugadores(jugadores){
+                for(var i in jugadores){
+                    this.jugadores.push(new JugadorFactory(i, jugadores[i]));
+                }
             }
             
             function crearRondas(numero_rondas){
@@ -71,14 +130,14 @@
                             total_cartas += 2;
                         }
                     }
-                    rondas.push(new RondaFactory(total_cartas, jugadores));
+                    rondas.push(new RondaFactory({numero_cartas: total_cartas, jugadores: getJugadores()}));
                 }
             }
             
             function obtenerPuntajeJugador(jugador){
                 var puntaje = 0;
                 
-                angular.forEach(rondas, function(ronda){
+                angular.forEach(this.rondas, function(ronda){
                     puntaje += parseInt(ronda.apuestas[jugador.id].obtenerPuntaje()) || 0;
                 });
                 return puntaje;
@@ -95,7 +154,7 @@
                     }
                 }
                 for(var i in rondas_agregadas){
-                    rondas.push(new RondaFactory(rondas_agregadas[i].numero_cartas, jugadores));
+                    rondas.push(new RondaFactory({numero_cartas: rondas_agregadas[i].numero_cartas, jugadores: configuracion.jugadores}));
                 }
                 for(var i in rondas_removidas){
                     for(var j in rondas){
@@ -105,7 +164,7 @@
                         }
                     }
                 }
-                this.numero_rondas = rondas.length;
+                configuracion.numero_rondas = rondas.length;
                 validarRondas();
             }
         
@@ -116,17 +175,23 @@
                 });
             }
         };
+        Juego.restore = function(configuracion){
+            var juego = new Juego(configuracion, $localStorage.juego);
+            return juego;
+        };
+        
+        return Juego;
     }
     
     function RondaFactory(ApuestaFactory){
         var uid = 0;
         
-        return function Ronda(numero_cartas, jugadores){
+        return function Ronda(init_config){
             
             var apuestas = {};
             
             this.id = ++uid;
-            this.numero_cartas = numero_cartas;
+            this.numero_cartas = init_config.numero_cartas;
             this.apuestas = apuestas;
             this.error_apuesta = false;
             this.error_resultados = false;
@@ -137,9 +202,15 @@
             initialize();
             
             function initialize(){
-                angular.forEach(jugadores, function(jugador){
-                    apuestas[jugador.id] = new ApuestaFactory();
-                });
+                if(init_config.apuestas){
+                    for(var i in init_config.apuestas){
+                        apuestas[init_config.apuestas[i].jugador.id] = new ApuestaFactory(init_config.apuestas[i]);
+                    }
+                } else {
+                    angular.forEach(init_config.jugadores, function(jugador){
+                        apuestas[jugador.id] = new ApuestaFactory({jugador: jugador});
+                    });
+                }
             }
             
             function controlarErrorApuestas(){
@@ -157,16 +228,17 @@
                 angular.forEach(apuestas, function(apuesta){
                     suma_resultados += apuesta.bases_obtenidas;
                 });
-                this.error_resultados = (isNaN(suma_resultados) || suma_resultados === this.numero_cartas ? false : true)
+                this.error_resultados = (isNaN(suma_resultados) || suma_resultados === this.numero_cartas ? false : true);
             };
         };
     }
     
     function ApuestaFactory(){
-        return function Apuesta(){
+        return function Apuesta(init_config){
             
-            this.bases_apostadas;
-            this.bases_obtenidas;
+            this.jugador = init_config.jugador;
+            this.bases_apostadas = init_config.bases_apostadas;
+            this.bases_obtenidas = init_config.bases_obtenidas;
             
             this.obtenerPuntaje = function(){
                 var puntaje = '--';
@@ -185,32 +257,49 @@
     }
     
     function JugadorFactory(){
-        return function Jugador(id, nombre){
-            this.id = id;
-            this.nombre = nombre;
-            
+        var uid = 0;
+        function Jugador(init_config){
+            if(init_config){
+                this.id = init_config.id;
+                this.nombre = init_config.nombre;
+            } else {
+                this.id = ++uid;
+            }
         };
+        return Jugador;
     }
 
-    function JuegoController($scope, JuegoFactory, $uibModal){
+    function ConfiguracionController($scope, $state, ConfiguracionJuegoFactory, JuegoFactory, JugadorFactory){
         
         $scope.crearJuego = crearJuego;
         $scope.actualizarNumeroJugadores = actualizarNumeroJugadores;
-        $scope.configurarPartida = configurarPartida;
         
-        $scope.juego = new JuegoFactory();
-        $scope.juego.numero_rondas = 5;
-        $scope.juego.numero_jugadores = 2;
-        $scope.jugadores = new Array($scope.juego.numero_jugadores);
-        
+        $scope.configuracion = new ConfiguracionJuegoFactory();
+        actualizarNumeroJugadores();
         
         function actualizarNumeroJugadores(){
-            $scope.jugadores.length = $scope.juego.numero_jugadores;
+            $scope.configuracion.jugadores.length = $scope.configuracion.numero_jugadores;
+            
+            for(var i = 0; i < $scope.configuracion.jugadores.length; i++){
+                if(!$scope.configuracion.jugadores[i]){
+                    $scope.configuracion.jugadores[i] = new JugadorFactory();
+                }
+            }
         }
         
         function crearJuego(){
-            $scope.juego.iniciar($scope.jugadores);
+            var juego = new JuegoFactory($scope.configuracion);
+            $state.go('partida');
         }
+        
+    }
+    
+    function PartidaController($scope, JuegoFactory, $uibModal, ConfiguracionJuegoFactory){
+        
+        var configuracion = ConfiguracionJuegoFactory.restore();
+        $scope.juego = JuegoFactory.restore(configuracion);
+        
+        $scope.configurarPartida = configurarPartida;
         
         function configurarPartida() {
             var modalInstance = $uibModal.open({
@@ -261,7 +350,7 @@
         
         $scope.getRondas = function(){
             return $scope.rondas.concat(rondas_agregadas);
-        }
+        };
     }
         
     function startWithZeroDirective($parse){

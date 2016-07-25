@@ -1,0 +1,114 @@
+<!-- Vista de la partida -->
+<div id="juego">
+    <div class='table-responsive'>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th class="col jugador" rowspan='3'>Jugadores</th>
+                    <th class="col ronda" colspan="{{ juego.configuracion.numero_rondas * 3 }}">
+                        Rondas
+                        <span ng-click='configurarPartida()' class='pull-right config-partida'><i class='fa fa-cog'></i></span>
+                    </th>
+                    <th class="col puntaje" rowspan='3'>Puntaje</th>
+                </tr>
+                <tr>
+                    <th colspan="3" class='col ronda' ng-repeat='ronda in juego.getRondas() track by ronda.id'>
+                        {{ $index + 1 }}° ({{ ronda.numero_cartas }} cartas)
+                    </th>
+                </tr>
+                <tr>
+                    <th class='col ronda' ng-repeat-start='ronda in juego.getRondas() track by ronda.id'>Apuesta</th>
+                    <th class='col ronda'>Resultado</th>
+                    <th class='col ronda' ng-repeat-end>Puntos</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr ng-repeat="jugador in juego.getJugadores() track by jugador.id" ng-form="rowform">
+                    <td class="col jugador">{{ jugador.nombre }}</td>
+                    <td class='col ronda' ng-class="{'error': ronda.error_apuestas || !rowform['apuesta' + $index].$valid}" ng-repeat-start='ronda in juego.getRondas() track by ronda.id'>
+                        <input type="number" name="apuesta{{ $index }}" class="form-control" ng-model="ronda.apuestas[jugador.id].bases_apostadas" min="0" max="{{ ronda.numero_cartas }}" start-with-zero ng-change="ronda.controlarErrorApuestas()"/>
+                    </td>
+                    <td class='col ronda' ng-class="{'error': ronda.error_resultados || !rowform['resultado' + $index].$valid}">
+                        <input type="number" name="resultado{{$index}}" class="form-control" ng-model="ronda.apuestas[jugador.id].bases_obtenidas" min="0" max="{{ ronda.numero_cartas }}" start-with-zero ng-change="ronda.controlarErrorResultados()"/>
+                    </td>
+                    <td class='col ronda' ng-repeat-end>
+                        <input type="text" readonly class="form-control" value="{{ ronda.error_apuestas || ronda.error_resultados || !rowform['apuesta' + $index].$valid || !rowform['resultado' + $index].$valid ? '--' :  ronda.apuestas[jugador.id].obtenerPuntaje() }}"/>
+                    </td>
+                    <td class="col puntaje">
+                        <input type="text" readonly class="form-control" value="{{ juego.obtenerPuntajeJugador(jugador) }}"/>
+                    </td>
+                </tr>
+            </tbody>
+
+        </table>
+    </div>
+
+
+
+<!--                <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th class="col jugador">Jugadores</th>
+                <th class="col rondas">
+                    Rondas
+                    <span ng-click='configurarPartida()' class='pull-right config-partida'><i class='fa fa-cog'></i></span>
+                </th>
+                <th class="col puntaje">Puntaje</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="col jugador">
+                    <table>
+                        <tr><td>&nbsp;</td></tr>
+                        <tr><td>&nbsp;</td></tr>
+                        <tr ng-repeat="jugador in juego.getJugadores() track by jugador.id">
+                            <td>{{ jugador.nombre }}</td>
+                        </tr>
+                    </table>
+                </td>
+                <td class='col rondas'>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th colspan="3" class='ronda' ng-repeat='ronda in juego.getRondas() track by ronda.id'>
+                                    {{ $index + 1 }}° ({{ ronda.numero_cartas }} cartas)
+                                </th>
+                            </tr>
+                            <tr>
+                                <th class='col ronda' ng-repeat-start='ronda in juego.getRondas() track by ronda.id'>Apuesta</th>
+                                <th class='col ronda'>Resultado</th>
+                                <th class='col ronda' ng-repeat-end>Puntos</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="jugador in juego.getJugadores() track by jugador.id">
+                                <td class='ronda' ng-class="{'error': ronda.error_apuestas}" ng-repeat-start='ronda in juego.getRondas() track by ronda.id'>
+                                    <input type="number" class="form-control" ng-model="ronda.apuestas[jugador.id].bases_apostadas" min="0" max="{{ ronda.numero_cartas }}" start-with-zero ng-change="ronda.controlarErrorApuestas()"/>
+                                </td>
+                                <td class='ronda' ng-class="{'error': ronda.error_resultados}">
+                                    <input type="number" class="form-control" ng-model="ronda.apuestas[jugador.id].bases_obtenidas" min="0" max="{{ ronda.numero_cartas }}" start-with-zero ng-change="ronda.controlarErrorResultados()"/>
+                                </td>
+                                <td class='ronda' ng-repeat-end>
+                                    <input type="text" readonly class="form-control" value="{{ ronda.error_apuestas || ronda.error_resultados ? '--' :  ronda.apuestas[jugador.id].obtenerPuntaje() }}"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+                <td class="col puntaje">
+                    <table>
+                        <tr><td>&nbsp;</td></tr>
+                        <tr><td>&nbsp;</td></tr>
+                        <tr ng-repeat="jugador in juego.getJugadores() track by jugador.id">
+                            <td><input type="text" readonly class="form-control" value="{{ juego.obtenerPuntajeJugador(jugador) }}"/></td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+
+    </table>-->
+
+</div>

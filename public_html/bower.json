@@ -1,0 +1,21 @@
+{
+  "name": "bases",
+  "homepage": "https://github.com/edriang/bases",
+  "authors": [
+    "edriang <edrian_g@hotmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "moduleType": [
+    "globals"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
