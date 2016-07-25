@@ -1,0 +1,24 @@
+<!-- Form de configuracion de la partida -->
+<form name='form' class="jumbotron" ng-submit="crearJuego()">
+
+    <h2>Configuración de la partida</h2>
+    <div class="form-group">
+        <label for="numero_rondas">Número de rondas</label>
+        <input id="numero_rondas" class="form-control" type="number" name="numero_rondas" ng-model="configuracion.numero_rondas" required />
+    </div>
+
+    <div class="form-group">
+        <label for="numero_rondas">Número de jugadores</label>
+        <input id="numero_jugadores" class="form-control" type="number" name="numero_jugadores" ng-model="configuracion.numero_jugadores" required min="2" ng-change="actualizarNumeroJugadores()" />
+    </div>
+
+    <h2>Jugadores</h2>
+    <div ng-repeat="jugador in configuracion.jugadores track by $index">
+        <div ng-form="jugador" class="form-group">
+            <label for="jugador_{{ $index }}">Nombre jugador {{ $index + 1 }}:</label>
+            <input id="jugador_{{ $index }}" class="form-control" type="text" name="jugador_{{ $index }}" ng-model="configuracion.jugadores[$index].nombre" required />
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Listo!</button>
+</form>

@@ -12,11 +12,17 @@
                 </span>
             </li>
             <li class='form-group'>
-                <span class='input-group'>
-                    <label class='input-group-addon'>Agregar ronda:</label>
-                    <input class='form-control' type='number' ng-model='nueva_ronda.numero_cartas' min='1'/>
-                    <label class='input-group-addon' ng-click='agregarRonda()'><i class='fa fa-check'></i></label>
-                </span>
+                <form class='form-group row'>
+                    <div class="col-xs-12">
+                        <label>Agregar ronda:</label>
+                    </div>
+                    <div class="col-xs-9">
+                        <input class='form-control' type='number' ng-model='nueva_ronda.numero_cartas' min='1'/>
+                    </div>
+                    <div class="col-xs-3">
+                        <button type="button" placeholder="Cantidad de cartas" class='btn btn-primary' ng-click='agregarRonda()'>Agregar</button>
+                    </div>
+                </form>
             </li>
         </ul>
     </div>
