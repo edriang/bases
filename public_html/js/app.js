@@ -13,7 +13,7 @@
         .controller('ConfigPartidaController', ConfigPartidaController)
         .directive('startWithZero', startWithZeroDirective);
 
-    function configureRoutes($stateProvider){
+    function configureRoutes($stateProvider, $urlRouterProvider){
         $stateProvider.state({
             name: 'configuracion',
             url: '/configurar-partida',
@@ -27,6 +27,8 @@
             templateUrl: 'views/partida.html',
             controller: 'PartidaController'
         });
+        
+        $urlRouterProvider.otherwise('/configurar-partida');
     }
     
     function ConfiguracionJuegoFactory($localStorage, JugadorFactory){
