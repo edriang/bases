@@ -1,47 +1,51 @@
 <!-- Vista de la partida -->
 <div id="juego">
-    <div class='table-responsive'>
-        <table class="table table-bordered table-striped">
+    <div bases-table='juego'>
+        <table class="table table-striped">
             <thead>
                 <tr>
-                    <th class="col jugador" rowspan='3'>Jugadores</th>
-                    <th class="col ronda" colspan="{{ juego.configuracion.numero_rondas * 3 }}">
-                        Rondas
-                        <span ng-click='configurarPartida()' class='pull-right config-partida'><i class='fa fa-cog'></i></span>
+                    <th class="col jugador" rowspan='3'><span>Jugadores</span></th>
+                    <th class="col ronda" colspan="{{ rondas_to_display.length * 3 }}">
+                        <i ng-click='moveLeft()' ng-show='ui.show_move_left' class='fa fa-arrow-left pull-left clickeable'></i>
+                        <span>Rondas</span>
+                        <i ng-click='moveRight()' ng-show='ui.show_move_right' class='fa fa-arrow-right pull-right clickeable'></i>
                     </th>
-                    <th class="col puntaje" rowspan='3'>Puntaje</th>
+                    <th class="col puntaje"><span ng-click='configurarPartida()' class='config-partida'><i class='fa fa-cog'></i></span></th>
+                </tr>
+                <tr class='rondas'>
+                    <th colspan="3" class='col ronda' ng-class="{'ronda-actual': juego.ronda_actual === ronda.numero}" ng-repeat='ronda in rondas_to_display track by ronda.id'>
+                        <span>{{ ronda.numero + '° (' + ronda.numero_cartas + 'carta' + (ronda.numero_cartas > 1 ? 's' : '') + ')'}}</span>
+                    </th>
+                    <th class="col puntaje" rowspan='2'><span>Puntaje</span></th>
                 </tr>
                 <tr>
-                    <th colspan="3" class='col ronda' ng-repeat='ronda in juego.getRondas() track by ronda.id'>
-                        {{ $index + 1 }}° ({{ ronda.numero_cartas }} cartas)
-                    </th>
-                </tr>
-                <tr>
-                    <th class='col ronda' ng-repeat-start='ronda in juego.getRondas() track by ronda.id'>Apuesta</th>
-                    <th class='col ronda'>Resultado</th>
-                    <th class='col ronda' ng-repeat-end>Puntos</th>
+                    <th class='col input' ng-repeat-start='ronda in rondas_to_display track by ronda.id' ng-class="{'ronda-actual': juego.ronda_actual === ronda.numero}"><span>Apuesta</span></th>
+                    <th class='col input' ng-class="{'ronda-actual': juego.ronda_actual === ronda.numero}"><span>Resultado</span></th>
+                    <th class='col input' ng-repeat-end ng-class="{'ronda-actual': juego.ronda_actual === ronda.numero}"><span>Puntos</span></th>
                 </tr>
             </thead>
             <tbody>
 
-                <tr ng-repeat="jugador in juego.getJugadores() track by jugador.id" ng-form="rowform">
+                <tr ng-repeat="(jugador_index, jugador) in juego.getJugadores() track by jugador.id" ng-form="rowform" ng-class="{'jugador-activo': isJugadorActivo(jugador_index)}">
                     <td class="col jugador">{{ jugador.nombre }}</td>
-                    <td class='col ronda' ng-class="{'error': ronda.error_apuestas || !rowform['apuesta' + $index].$valid}" ng-repeat-start='ronda in juego.getRondas() track by ronda.id'>
-                        <input type="number" name="apuesta{{ $index }}" class="form-control" ng-model="ronda.apuestas[jugador.id].bases_apostadas" min="0" max="{{ ronda.numero_cartas }}" start-with-zero ng-change="ronda.controlarErrorApuestas()"/>
+                    <td class='col input' ng-class="{'ronda-actual': juego.ronda_actual === ronda.numero, 'error': ronda.error_apuestas || !rowform['apuesta' + $index].$valid}" ng-repeat-start='ronda in rondas_to_display track by ronda.id'>
+                        <input type="number" name="apuesta{{ $index }}" class="form-control" ng-model="ronda.apuestas[jugador.id].bases_apostadas" min="0" max="{{ ronda.numero_cartas }}" start-with-zero ng-change="ronda.controlarErrorApuestas(); ronda.controlarErrorIncompleto();" ng-readonly="juego.ronda_actual < ronda.numero"/>
                     </td>
-                    <td class='col ronda' ng-class="{'error': ronda.error_resultados || !rowform['resultado' + $index].$valid}">
-                        <input type="number" name="resultado{{$index}}" class="form-control" ng-model="ronda.apuestas[jugador.id].bases_obtenidas" min="0" max="{{ ronda.numero_cartas }}" start-with-zero ng-change="ronda.controlarErrorResultados()"/>
+                    <td class='col input' ng-class="{'ronda-actual': juego.ronda_actual === ronda.numero, 'error': ronda.error_resultados || !rowform['resultado' + $index].$valid}">
+                        <input type="number" name="resultado{{$index}}" class="form-control" ng-model="ronda.apuestas[jugador.id].bases_obtenidas" min="0" max="{{ ronda.numero_cartas }}" start-with-zero ng-change="ronda.controlarErrorResultados(); ronda.controlarErrorIncompleto();" ng-readonly="juego.ronda_actual < ronda.numero"/>
                     </td>
-                    <td class='col ronda' ng-repeat-end>
+                    <td class='col input' ng-repeat-end ng-class="{'ronda-actual': juego.ronda_actual === ronda.numero}">
                         <input type="text" readonly class="form-control" value="{{ ronda.error_apuestas || ronda.error_resultados || !rowform['apuesta' + $index].$valid || !rowform['resultado' + $index].$valid ? '--' :  ronda.apuestas[jugador.id].obtenerPuntaje() }}"/>
                     </td>
-                    <td class="col puntaje">
+                    <td class="col puntaje" ng-class="{'ronda-actual': juego.ronda_actual === ronda.numero}">
                         <input type="text" readonly class="form-control" value="{{ juego.obtenerPuntajeJugador(jugador) }}"/>
                     </td>
                 </tr>
             </tbody>
-
         </table>
+        <div class="botonera">
+            <button class="btn btn-primary pull-right" ng-click="siguienteRonda()" ng-disabled="juego.ronda_actual >= juego.configuracion.numero_rondas">Siguiente ronda</button>
+        </div>
     </div>
 
 

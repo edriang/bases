@@ -11,7 +11,8 @@
         .controller('ConfiguracionController', ConfiguracionController)
         .controller('PartidaController', PartidaController)
         .controller('ConfigPartidaController', ConfigPartidaController)
-        .directive('startWithZero', startWithZeroDirective);
+        .directive('startWithZero', startWithZeroDirective)
+        .directive('basesTable', basesTableDirective);
 
     function configureRoutes($stateProvider, $urlRouterProvider){
         $stateProvider.state({
@@ -35,7 +36,7 @@
         function ConfiguracionJuego(init_config){
             
             //Defaults
-            this.numero_rondas = 5;
+            this.numero_rondas = 9;
             this.numero_jugadores = 2;
             this.jugadores = [];
             
@@ -132,7 +133,7 @@
                             total_cartas += 2;
                         }
                     }
-                    rondas.push(new RondaFactory({numero_cartas: total_cartas, jugadores: getJugadores()}));
+                    rondas.push(new RondaFactory({numero_cartas: total_cartas, jugadores: getJugadores(), numero: rondas.length + 1}));
                 }
             }
             
@@ -156,7 +157,7 @@
                     }
                 }
                 for(var i in rondas_agregadas){
-                    rondas.push(new RondaFactory({numero_cartas: rondas_agregadas[i].numero_cartas, jugadores: configuracion.jugadores}));
+                    rondas.push(new RondaFactory({numero_cartas: rondas_agregadas[i].numero_cartas, jugadores: configuracion.jugadores, numero: rondas.length + 1}));
                 }
                 for(var i in rondas_removidas){
                     for(var j in rondas){
@@ -185,7 +186,7 @@
         return Juego;
     }
     
-    function RondaFactory(ApuestaFactory){
+    function RondaFactory(ApuestaFactory, $timeout){
         var uid = 0;
         
         return function Ronda(init_config){
@@ -193,13 +194,16 @@
             var apuestas = {};
             
             this.id = ++uid;
+            this.numero = init_config.numero;
             this.numero_cartas = init_config.numero_cartas;
             this.apuestas = apuestas;
             this.error_apuesta = false;
             this.error_resultados = false;
+            this.error_incompleto = false;
             
             this.controlarErrorApuestas = controlarErrorApuestas;
             this.controlarErrorResultados = controlarErrorResultados;
+            this.controlarErrorIncompleto = controlarErrorIncompleto;
             
             initialize();
             
@@ -213,6 +217,7 @@
                         apuestas[jugador.id] = new ApuestaFactory({jugador: jugador});
                     });
                 }
+                controlarErrorIncompleto();
             }
             
             function controlarErrorApuestas(){
@@ -221,7 +226,8 @@
                 angular.forEach(apuestas, function(apuesta){
                     suma_apuestas += apuesta.bases_apostadas;
                 });
-                this.error_apuestas = (suma_apuestas === this.numero_cartas ? true : false)
+                this.error_apuestas = (suma_apuestas === this.numero_cartas ? true : false);
+                
             };
             
             function controlarErrorResultados(){
@@ -231,7 +237,19 @@
                     suma_resultados += apuesta.bases_obtenidas;
                 });
                 this.error_resultados = (isNaN(suma_resultados) || suma_resultados === this.numero_cartas ? false : true);
+                
             };
+            
+            function controlarErrorIncompleto(){
+                var incompleto = false;
+                for(var i in apuestas){
+                    if(apuestas[i].bases_apostadas === null || apuestas[i].bases_apostadas === undefined || apuestas[i].bases_obtenidas === null || apuestas[i].bases_obtenidas === undefined){
+                        incompleto = true;
+                        break;
+                    }
+                };
+                this.error_incompleto = incompleto;
+            }
         };
     }
     
@@ -375,6 +393,136 @@
 //                    return value;
 //                });
                 
+            }
+        };
+    }
+    
+    function basesTableDirective($timeout){
+        return {
+            restrict: 'A',
+            scope: true,
+            link: function($scope, $element, $attrs){
+                
+                var w = $(window);
+                var column_width = 175;
+                var t;
+                var juego = $scope.$eval($attrs.basesTable);
+                var cota_izq;
+                var cota_der;
+                var max_columnas;
+                var first_time = true;
+                
+                var col_jugador = $element.find('.jugador');
+                var col_puntaje = $element.find('.puntaje');
+                
+                $scope.moveLeft = moveLeft;
+                $scope.moveRight = moveRight;
+                $scope.isJugadorActivo = isJugadorActivo;
+                $scope.siguienteRonda = siguienteRonda;
+                
+                $scope.ui = {
+                    show_move_left: false,
+                    show_move_right: false
+                };
+                
+                initialize();
+                
+                function initialize(){
+                    w.on('resize', setMaxColumns);
+                    
+                    $scope.$on('$destroy', function(){
+                        w.off('resize', setMaxColumns);
+                    });
+                    $timeout(function(){
+                        setMaxColumns();
+                    });
+                    
+                }
+                
+                function ajustarCotas(){
+                    if(juego.ronda_actual < cota_izq + 1){
+                        cota_izq = juego.ronda_actual - 1;
+                        cota_der = cota_izq + max_columnas;
+                    } else if(juego.ronda_actual > cota_der){
+                        cota_der = juego.ronda_actual;
+                        cota_izq = cota_der - max_columnas;
+                    }
+                    
+//                    cota_izq = juego.ronda_actual - 1;
+//                    cota_der = cota_izq + max_columnas;
+//                    
+                    if(cota_der >= juego.configuracion.numero_rondas){
+                        cota_der = juego.configuracion.numero_rondas;
+                         cota_izq = cota_der - max_columnas;
+                    }
+                }
+                
+                function siguienteRonda(){
+                    if(juego.ronda_actual < juego.configuracion.numero_rondas){
+                        juego.ronda_actual++;
+                    }
+                    ajustarCotas();
+                    updateRoundsToDisplay(cota_izq, cota_der);
+                }
+                
+                function isJugadorActivo(index){
+                    var resto = juego.ronda_actual % juego.configuracion.jugadores.length;
+                    if(resto === 0){
+                        resto = juego.configuracion.jugadores.length;
+                    }
+                    return (index + 1) / resto === 1;
+                }
+                
+                function moveLeft(){
+                    if(cota_izq > 0){
+                        cota_izq--;
+                        cota_der--;
+                        updateRoundsToDisplay(cota_izq, cota_der);
+                    }
+                }
+                
+                function moveRight(){
+                    if(cota_der < juego.configuracion.numero_rondas){
+                        cota_izq++;
+                        cota_der++;
+                        updateRoundsToDisplay(cota_izq, cota_der);
+                    }
+                }
+                
+                function setMaxColumns(){
+                    if(t){
+                        $timeout.cancel(t);
+                    }
+                    t = $timeout(function(){
+                        var width = $element.width() - 200;
+                        max_columnas = Math.floor(width / column_width);
+                        if(max_columnas < 1){
+                            max_columnas = 1;
+                        }
+                        cota_izq = $scope.juego.ronda_actual - 1;
+                        cota_der = cota_izq + max_columnas;
+                        
+//                        if(first_time){
+                            ajustarCotas();
+//                            first_time = false;
+//                        }
+                        
+                        updateRoundsToDisplay(cota_izq, cota_der);
+                        
+                        t = null;
+                    }, 50);
+                }
+                
+                function updateRoundsToDisplay(cota_izq, cota_der){
+                    
+                    
+                    $scope.rondas_to_display = juego.getRondas().slice(cota_izq, cota_der);
+                    
+                    $scope.ui.show_move_left = cota_izq > 0;
+                    $scope.ui.show_move_right = cota_der < juego.configuracion.numero_rondas;
+                    
+                    console.log('rondas_to_display', $scope.rondas_to_display, $scope.rondas_to_display.length);
+                }
             }
         };
     }
