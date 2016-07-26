@@ -15,13 +15,25 @@ label {
     font-size: 1.3em;
 }
 
+.clickeable {
+    cursor: pointer;
+    
+    &:hover {
+        opacity: 0.5;
+    }
+}
+
 #main-wrapper {
     /*max-width: 120em;*/
     padding: 2em 3em 4em;
     
-    .ronda {
-        width: 8em;
+    table {
+        border: 1px solid #4b607d;
     }
+    th, td, tr {
+        border: none;
+    }
+    
     .numero_cartas {
         width: 3.5em;
         border: none;
@@ -30,13 +42,56 @@ label {
     }
     th {
         text-align: center;
-        background: #efefef;
+        background: #b7c9cc;
+    }
+    th,
+    td {
+        & > span {
+            font-size: 1.2em;
+        }
+    }
+    .form-control[readonly]{
+        background: #e0e0e0;
     }
     .col.jugador {
-        width: 4em;
+        width: 10em;
     }
     .col.puntaje {
         width: 3em;
+    }
+    .col.input {
+        width: 50px;
+    }
+    th.ronda-actual {
+        background: #1b6d85;
+        border-color: #1b6d85;
+        color: white;
+        border: 1px solid #1b6d85;
+        border-top: none;
+        border-bottom: none;
+    }
+    td.ronda-actual {
+        border: 1px solid #1b6d85;
+    }
+    td.ronda-actual .form-control{
+        outline: none;
+        outline-offset: 0;
+        box-shadow: none;
+    }
+    .jugador-activo {
+        td, 
+        .form-control{
+            background: #ffdb70;
+        }
+        .form-control[readonly]{
+            background: #dcc06b;
+        }
+    }
+    .botonera {
+        .btn {
+            border-radius: 0;
+            padding: 0.4em 0.8em;
+        }
     }
     
     .config-partida {

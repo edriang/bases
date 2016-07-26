@@ -2,5 +2,7 @@
     "elements": {
         "ui-view": {}
     },
-    "attributes": {}
+    "attributes": {
+        "bases-table": {}
+    }
 }
