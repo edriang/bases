@@ -482,13 +482,13 @@
                 }
                 
                 function rondaAnterior(){
-                    if(!$scope.rondas_form[juego.ronda_actual].$valid){
-                        $scope.rondas_form[juego.ronda_actual].mostrar_errores = true;
-                    } else {
+//                    if(!$scope.rondas_form[juego.ronda_actual].$valid){
+//                        $scope.rondas_form[juego.ronda_actual].mostrar_errores = true;
+//                    } else {
                         juego.ronda_actual--;
                         ajustarCotas();
                         updateRoundsToDisplay();
-                    }
+//                    }
                 }
                 
                 function rondaSiguiente(){
