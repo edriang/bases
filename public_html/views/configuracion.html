@@ -2,6 +2,12 @@
 <form name='form' class="jumbotron" ng-submit="crearJuego()">
 
     <h2>Configuración de la partida</h2>
+    
+    <div class="form-group">
+        <label for="modo">Modo</label>
+        <select class="form-control" ng-model="configuracion.modo" required ng-options="m.value as m.label for m in MODOS"></select>
+    </div>
+    
     <div class="form-group">
         <label for="numero_rondas">Número de rondas</label>
         <input id="numero_rondas" class="form-control" type="number" name="numero_rondas" ng-model="configuracion.numero_rondas" required />

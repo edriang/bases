@@ -1,6 +1,73 @@
 <!-- Vista de la partida -->
 <div id="juego">
-    <div bases-table='juego'>
+    
+    
+    <div bases-table='juego' class="tablero">
+        <!--<span ng-click='configurarPartida()' class='config-partida clickeable pull-right'><i class='fa fa-cog fa-spin-hover'></i></span>-->
+        <div class='col-wrapper tabla'>
+            <div class="jugadores col">
+                <div class='cell cell-x2 cabecera'>
+                    <span class='bottom'>Jugadores</span>
+                </div>
+                <div class="cell jugador fila" ng-repeat="jugador in juego.getJugadores() track by jugador.id" ng-class="{'jugador-activo': isJugadorActivo($index)}">
+                    <span><i class="fa fa-caret-right actual"></i>{{ jugador.nombre }}</span>
+                </div>
+            </div>
+            <div class="rondas col">
+                <div class='botonera'>
+                    <i ng-click='moveLeft()' ng-show='ui.show_move_left' class='fa fa-chevron-left pull-left clickeable mover'></i>
+                    <i ng-click='moveRight()' ng-show='ui.show_move_right' class='fa fa-chevron-right pull-right clickeable mover'></i>
+                </div>
+                <div class='col-wrapper'>
+                    <form name="rondas_form[ronda.numero]" class="ronda col" ng-repeat='ronda in rondas_to_display track by ronda.id' ng-class="{'ronda-actual': juego.ronda_actual === ronda.numero}">
+                        <div class="row cabecera cell-x2">
+                            <div class="cell">
+                                <span>{{ 'Ronda N° ' + ronda.numero + ' (' + ronda.numero_cartas + ' carta' + (ronda.numero_cartas > 1 ? 's' : '') + ')'}}</span>
+                            </div>
+                            <div class="cell col-xs-4 apuestas">
+                                <span>Apuetas</span>
+                            </div>
+                            <div class="cell col-xs-4 bases">
+                                <span>Bases</span>
+                            </div>
+                            <div class="cell col-xs-4 puntos">
+                                <span>Puntos</span>
+                            </div>
+                        </div>
+                        <div class="row detalle fila" ng-form="row_form" ng-repeat="jugador in juego.getJugadores() track by jugador.id" ng-class="{'jugador-activo': isJugadorActivo($index),}">
+                            <div class="cell col-xs-4 apuestas" ng-class="{'error': ronda.error_apuestas || row_form['apuesta' + $index].$error.min || row_form['apuesta' + $index].$error.max || (rondas_form[ronda.numero].mostrar_errores && row_form['apuesta' + $index].$error.required)}">
+                                <input type="number" name="apuesta{{ $index }}" class="form-control" ng-model="ronda.apuestas[jugador.id].bases_apostadas" min="0" max="{{ ronda.numero_cartas }}" required start-with-zero ng-change="ronda.controlarErrorApuestas(); ronda.controlarErrorIncompleto();" ng-readonly="juego.ronda_actual !== ronda.numero"/>
+                            </div>
+                            <div class="cell col-xs-4 bases" ng-class="{'error': ronda.error_resultados || row_form['resultado' + $index].$error.min || row_form['resultado' + $index].$error.max || (rondas_form[ronda.numero].mostrar_errores && row_form['resultado' + $index].$error.required)}">
+                                <input type="number" name="resultado{{$index}}" class="form-control" ng-model="ronda.apuestas[jugador.id].bases_obtenidas" min="0" max="{{ ronda.numero_cartas }}" required start-with-zero ng-change="ronda.controlarErrorResultados(); ronda.controlarErrorIncompleto();" ng-readonly="juego.ronda_actual !== ronda.numero"/>
+                            </div>
+                            <div class="cell col-xs-4 puntos">
+                                <input type="text" readonly class="form-control" value="{{ ronda.error_apuestas || ronda.error_resultados || !rondas_form[ronda.numero].$valid ? '--' :  ronda.apuestas[jugador.id].obtenerPuntaje(juego.configuracion.modo) }}"/>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="puntajes col">
+                <div class='cell cell-x2 cabecera'>
+                    <span class='bottom'>Puntajes</span>
+                </div>
+                <div class="cell puntaje fila" ng-repeat="jugador in juego.getJugadores() track by jugador.id" ng-class="{'jugador-activo': isJugadorActivo($index)}">
+                    <span>{{ juego.obtenerPuntajeJugador(jugador) }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <div class="pull-right">
+                <button class="btn btn-primary" ng-click="rondaAnterior()" ng-disabled="juego.ronda_actual === 1"><i class="fa fa-angle-left" style="margin-right: 0.5em"></i>Anterior</button>
+                <button class="btn btn-primary" ng-click="rondaSiguiente()" ng-disabled="juego.ronda_actual >= juego.configuracion.numero_rondas">Siguiente<i class="fa fa-angle-right" style="margin-left: 0.5em"></i></button>
+            </div>
+            
+        </div>
+    </div>
+    
+    
+<!--    <div bases-table='juego2' class="mtabla">
         <table class="table table-striped">
             <thead>
                 <tr>
@@ -46,7 +113,7 @@
         <div class="botonera">
             <button class="btn btn-primary pull-right" ng-click="siguienteRonda()" ng-disabled="juego.ronda_actual >= juego.configuracion.numero_rondas">Siguiente ronda</button>
         </div>
-    </div>
+    </div>-->
 
 
 
