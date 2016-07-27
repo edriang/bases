@@ -17,70 +17,192 @@ label {
   .clickeable:hover {
     opacity: 0.5; }
 
-#main-wrapper {
+.fa-spin-hover:hover {
+  -webkit-animation: spin 2s infinite linear;
+  -moz-animation: spin 2s infinite linear;
+  -o-animation: spin 2s infinite linear;
+  animation: spin 2s infinite linear; }
+
+#main-wrapper .mtabla {
   /*max-width: 120em;*/
   padding: 2em 3em 4em; }
-  #main-wrapper table {
+  #main-wrapper .mtabla table {
     border: 1px solid #4b607d; }
-  #main-wrapper th, #main-wrapper td, #main-wrapper tr {
+  #main-wrapper .mtabla th, #main-wrapper .mtabla td, #main-wrapper .mtabla tr {
     border: none; }
-  #main-wrapper .numero_cartas {
+  #main-wrapper .mtabla .numero_cartas {
     width: 3.5em;
     border: none;
     padding: 0; }
-  #main-wrapper th {
+  #main-wrapper .mtabla th {
     text-align: center;
     background: #b7c9cc; }
-  #main-wrapper th > span,
-  #main-wrapper td > span {
+  #main-wrapper .mtabla th > span,
+  #main-wrapper .mtabla td > span {
     font-size: 1.2em; }
-  #main-wrapper .form-control[readonly] {
+  #main-wrapper .mtabla .form-control[readonly] {
     background: #e0e0e0; }
-  #main-wrapper .col.jugador {
+  #main-wrapper .mtabla .col.jugador {
     width: 10em; }
-  #main-wrapper .col.puntaje {
+  #main-wrapper .mtabla .col.puntaje {
     width: 3em; }
-  #main-wrapper .col.input {
+  #main-wrapper .mtabla .col.input {
     width: 50px; }
-  #main-wrapper th.ronda-actual {
+  #main-wrapper .mtabla th.ronda-actual {
     background: #1b6d85;
     border-color: #1b6d85;
     color: white;
     border: 1px solid #1b6d85;
     border-top: none;
     border-bottom: none; }
-  #main-wrapper td.ronda-actual {
+  #main-wrapper .mtabla td.ronda-actual {
     border: 1px solid #1b6d85; }
-  #main-wrapper td.ronda-actual .form-control {
+  #main-wrapper .mtabla td.ronda-actual .form-control {
     outline: none;
     outline-offset: 0;
     box-shadow: none; }
-  #main-wrapper .jugador-activo td,
-  #main-wrapper .jugador-activo .form-control {
+  #main-wrapper .mtabla .jugador-activo td,
+  #main-wrapper .mtabla .jugador-activo .form-control {
     background: #ffdb70; }
-  #main-wrapper .jugador-activo .form-control[readonly] {
+  #main-wrapper .mtabla .jugador-activo .form-control[readonly] {
     background: #dcc06b; }
-  #main-wrapper .botonera .btn {
+  #main-wrapper .mtabla .botonera .btn {
     border-radius: 0;
     padding: 0.4em 0.8em; }
-  #main-wrapper .config-partida {
+  #main-wrapper .mtabla .config-partida {
     font-size: 1.2em;
     cursor: pointer; }
-  #main-wrapper tbody .col {
+  #main-wrapper .mtabla tbody .col {
     padding: 0; }
-  #main-wrapper tbody .jugador {
+  #main-wrapper .mtabla tbody .jugador {
     padding: 1em; }
-  #main-wrapper tbody .form-control {
+  #main-wrapper .mtabla tbody .form-control {
     border-radius: 0;
     border: none; }
-  #main-wrapper .error,
-  #main-wrapper .error * {
+  #main-wrapper .mtabla .error,
+  #main-wrapper .mtabla .error * {
     background: rgba(255, 0, 0, 0.1); }
-  #main-wrapper .table-responsive {
+  #main-wrapper .mtabla .table-responsive {
     border: 1px solid #ddd; }
-    #main-wrapper .table-responsive .table {
+    #main-wrapper .mtabla .table-responsive .table {
       border: none;
       margin-bottom: 0; }
+
+.col-wrapper {
+  display: table; }
+  .col-wrapper .col {
+    display: table-cell;
+    vertical-align: top; }
+
+.tablero {
+  width: 100%; }
+  .tablero .tabla {
+    font-size: 1.3em;
+    border: 1px solid #333; }
+  .tablero .col-wrapper {
+    width: 100%; }
+  .tablero .row {
+    margin: 0; }
+  .tablero .col {
+    padding: 0;
+    position: relative; }
+  .tablero .cell {
+    height: 3em;
+    padding: 0;
+    position: relative; }
+  .tablero .cell > * {
+    display: inline-block;
+    padding: 0.9em 0.5em;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis; }
+  .tablero .cell-x2 {
+    height: 6em; }
+  .tablero .fila:nth-child(odd) {
+    background: rgba(221, 221, 221, 0.7); }
+  .tablero .fila:nth-child(even) {
+    background: rgba(221, 221, 221, 0.2); }
+  .tablero .bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: auto; }
+  .tablero .jugadores {
+    width: 11em; }
+  .tablero .puntajes {
+    width: 6em; }
+  @media (max-width: 480px) {
+    .tablero .tabla {
+      font-size: 1.2em; }
+    .tablero .jugadores {
+      width: 6em; }
+    .tablero .puntajes {
+      width: 4em; } }
+  .tablero .cabecera {
+    background: rgba(140, 180, 187, 0.7);
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    border-bottom: 1px solid rgba(51, 51, 51, 0.5); }
+    .tablero .cabecera .cell {
+      padding-left: 0.1em;
+      padding-right: 0.1em; }
+  .tablero .detalle .bases {
+    background: rgba(51, 51, 51, 0.1); }
+  .tablero .detalle .puntos {
+    /*background: rgba(#333, 0.13);*/ }
+  .tablero .rondas .botonera {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3em;
+    z-index: 2; }
+    .tablero .rondas .botonera .mover {
+      padding: 0.9em 0.5em;
+      margin-top: 0.1em; }
+  .tablero .ronda-actual .cabecera {
+    background: rgba(232, 211, 108, 0.7);
+    color: #292848; }
+  .tablero .ronda-actual .form-control[readonly] {
+    background: transparent; }
+  .tablero .ronda {
+    border-left: 1px solid rgba(51, 51, 51, 0.5); }
+  .tablero .ronda:last-child {
+    border-right: 1px solid rgba(51, 51, 51, 0.5); }
+  .tablero .fila.jugador-activo {
+    background: rgba(255, 224, 0, 0.5); }
+    .tablero .fila.jugador-activo.jugador {
+      color: #e03a14; }
+    .tablero .fila.jugador-activo .actual {
+      display: inline-block;
+      font-size: 1.2em;
+      margin-right: 0.4em; }
+  .tablero .jugador {
+    font-weight: bold; }
+    .tablero .jugador .actual {
+      display: none; }
+  .tablero .error .form-control {
+    background: rgba(255, 125, 119, 0.6);
+    /*border: 1px solid $color-error;*/ }
+  .tablero .form-control {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    outline-offset: 0; }
+  .tablero .form-control[readonly] {
+    background: rgba(51, 51, 51, 0.3); }
+  .tablero .config-partida {
+    font-size: 1.4em;
+    cursor: pointer;
+    padding-right: 0.2em; }
+  .tablero .footer {
+    padding: 1em 0; }
+    .tablero .footer .btn {
+      border-radius: 0;
+      padding: 0.4em 0.8em; }
 
 #config-partida ul {
   padding-left: 0; }

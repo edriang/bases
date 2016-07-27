@@ -1,13 +1,13 @@
 (function(){
     
-    angular.module('bases', ['ui.bootstrap', 'ui.router', 'ngStorage'])
+    angular.module('bases', ['ui.bootstrap', 'ui.router', 'ngStorage', 'ui.validate'])
         .config(configureRoutes)
+        .constant('CONFIG', getConfig())
         .factory('JuegoFactory', JuegoFactory)
         .factory('RondaFactory', RondaFactory)
         .factory('ApuestaFactory', ApuestaFactory)
         .factory('JugadorFactory', JugadorFactory)
         .factory('ConfiguracionJuegoFactory', ConfiguracionJuegoFactory)
-        .service('ConfigJuegoService', ConfigJuegoService)
         .controller('ConfiguracionController', ConfiguracionController)
         .controller('PartidaController', PartidaController)
         .controller('ConfigPartidaController', ConfigPartidaController)
@@ -32,10 +32,23 @@
         $urlRouterProvider.otherwise('/configurar-partida');
     }
     
-    function ConfiguracionJuegoFactory($localStorage, JugadorFactory){
+    function getConfig(){
+        var MODO_A = 1;
+        var MODO_B = 2;
+        return {
+            MODO_A: MODO_A,
+            MODO_B: MODO_B,
+            MODOS: [
+                {label: 'Bases suman al ganar', value: MODO_A},
+                {label: 'Bases suman siempre', value: MODO_B}
+            ]
+        };
+    }
+    function ConfiguracionJuegoFactory($localStorage, JugadorFactory, CONFIG){
         function ConfiguracionJuego(init_config){
             
             //Defaults
+            this.modo = CONFIG.MODO_B;
             this.numero_rondas = 9;
             this.numero_jugadores = 2;
             this.jugadores = [];
@@ -45,6 +58,7 @@
             function initialize(){
                 
                 if(init_config){
+                    this.modo = init_config.modo;
                     this.numero_rondas = init_config.numero_rondas;
                     this.numero_jugadores = init_config.numero_jugadores;
                     
@@ -65,10 +79,6 @@
         return ConfiguracionJuego;
     }
     
-    function ConfigJuegoService(){
-        this.bases_suman_siempre = true;
-    }
-
     function JuegoFactory(JugadorFactory, RondaFactory, $localStorage){
         function Juego(configuracion, init_config){
             
@@ -141,7 +151,7 @@
                 var puntaje = 0;
                 
                 angular.forEach(this.rondas, function(ronda){
-                    puntaje += parseInt(ronda.apuestas[jugador.id].obtenerPuntaje()) || 0;
+                    puntaje += parseInt(ronda.apuestas[jugador.id].obtenerPuntaje(configuracion.modo)) || 0;
                 });
                 return puntaje;
             }
@@ -186,7 +196,7 @@
         return Juego;
     }
     
-    function RondaFactory(ApuestaFactory, $timeout){
+    function RondaFactory(ApuestaFactory){
         var uid = 0;
         
         return function Ronda(init_config){
@@ -253,23 +263,34 @@
         };
     }
     
-    function ApuestaFactory(){
+    function ApuestaFactory(CONFIG){
         return function Apuesta(init_config){
             
             this.jugador = init_config.jugador;
             this.bases_apostadas = init_config.bases_apostadas;
             this.bases_obtenidas = init_config.bases_obtenidas;
             
-            this.obtenerPuntaje = function(){
-                var puntaje = '--';
+            this.obtenerPuntaje = function(modo){
+                var puntaje;
                 
                 if(this.bases_obtenidas !== undefined){
-                    puntaje = this.bases_obtenidas;
-                    if(this.bases_apostadas === this.bases_obtenidas){
-                        puntaje += 10;
-                    } else {
-                        puntaje -= 10;
+                    
+                    if(modo === CONFIG.MODO_A){
+                        if(this.bases_apostadas === this.bases_obtenidas){
+                            puntaje = (10 +  this.bases_obtenidas);
+                        } else {
+                            puntaje = -10;
+                        }
+                    } else if(modo === CONFIG.MODO_B){
+                        puntaje = this.bases_obtenidas;
+                        if(this.bases_apostadas === this.bases_obtenidas){
+                            puntaje += 10;
+                        } else {
+                            puntaje -= 10;
+                        }
                     }
+                } else {
+                    puntaje = '--';
                 }
                 return puntaje;
             };
@@ -289,11 +310,12 @@
         return Jugador;
     }
 
-    function ConfiguracionController($scope, $state, ConfiguracionJuegoFactory, JuegoFactory, JugadorFactory){
+    function ConfiguracionController($scope, $state, ConfiguracionJuegoFactory, JuegoFactory, JugadorFactory, CONFIG){
         
         $scope.crearJuego = crearJuego;
         $scope.actualizarNumeroJugadores = actualizarNumeroJugadores;
         
+        $scope.MODOS = CONFIG.MODOS;
         $scope.configuracion = new ConfiguracionJuegoFactory();
         actualizarNumeroJugadores();
         
@@ -318,6 +340,7 @@
         
         var configuracion = ConfiguracionJuegoFactory.restore();
         $scope.juego = JuegoFactory.restore(configuracion);
+        $scope.juego2 = JuegoFactory.restore(configuracion);
         
         $scope.configurarPartida = configurarPartida;
         
@@ -404,7 +427,7 @@
             link: function($scope, $element, $attrs){
                 
                 var w = $(window);
-                var column_width = 175;
+                var column_width = 190;
                 var t;
                 var juego = $scope.$eval($attrs.basesTable);
                 var cota_izq;
@@ -412,13 +435,14 @@
                 var max_columnas;
                 var first_time = true;
                 
-                var col_jugador = $element.find('.jugador');
-                var col_puntaje = $element.find('.puntaje');
+                var col_rondas = $element.find('.rondas');
                 
+                $scope.rondas_form = [];
                 $scope.moveLeft = moveLeft;
                 $scope.moveRight = moveRight;
                 $scope.isJugadorActivo = isJugadorActivo;
-                $scope.siguienteRonda = siguienteRonda;
+                $scope.rondaAnterior = rondaAnterior;
+                $scope.rondaSiguiente = rondaSiguiente;
                 
                 $scope.ui = {
                     show_move_left: false,
@@ -457,12 +481,24 @@
                     }
                 }
                 
-                function siguienteRonda(){
-                    if(juego.ronda_actual < juego.configuracion.numero_rondas){
-                        juego.ronda_actual++;
+                function rondaAnterior(){
+                    if(!$scope.rondas_form[juego.ronda_actual].$valid){
+                        $scope.rondas_form[juego.ronda_actual].mostrar_errores = true;
+                    } else {
+                        juego.ronda_actual--;
+                        ajustarCotas();
+                        updateRoundsToDisplay();
                     }
-                    ajustarCotas();
-                    updateRoundsToDisplay(cota_izq, cota_der);
+                }
+                
+                function rondaSiguiente(){
+                    if(!$scope.rondas_form[juego.ronda_actual].$valid){
+                        $scope.rondas_form[juego.ronda_actual].mostrar_errores = true;
+                    } else {
+                        juego.ronda_actual++;
+                        ajustarCotas();
+                        updateRoundsToDisplay();
+                    }
                 }
                 
                 function isJugadorActivo(index){
@@ -477,7 +513,7 @@
                     if(cota_izq > 0){
                         cota_izq--;
                         cota_der--;
-                        updateRoundsToDisplay(cota_izq, cota_der);
+                        updateRoundsToDisplay();
                     }
                 }
                 
@@ -485,7 +521,7 @@
                     if(cota_der < juego.configuracion.numero_rondas){
                         cota_izq++;
                         cota_der++;
-                        updateRoundsToDisplay(cota_izq, cota_der);
+                        updateRoundsToDisplay();
                     }
                 }
                 
@@ -494,7 +530,7 @@
                         $timeout.cancel(t);
                     }
                     t = $timeout(function(){
-                        var width = $element.width() - 200;
+                        var width = col_rondas.width();
                         max_columnas = Math.floor(width / column_width);
                         if(max_columnas < 1){
                             max_columnas = 1;
@@ -507,13 +543,13 @@
 //                            first_time = false;
 //                        }
                         
-                        updateRoundsToDisplay(cota_izq, cota_der);
+                        updateRoundsToDisplay();
                         
                         t = null;
                     }, 50);
                 }
                 
-                function updateRoundsToDisplay(cota_izq, cota_der){
+                function updateRoundsToDisplay(){
                     
                     
                     $scope.rondas_to_display = juego.getRondas().slice(cota_izq, cota_der);
