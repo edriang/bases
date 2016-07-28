@@ -151,7 +151,9 @@
                 var puntaje = 0;
                 
                 angular.forEach(this.rondas, function(ronda){
-                    puntaje += parseInt(ronda.apuestas[jugador.id].obtenerPuntaje(configuracion.modo)) || 0;
+                    if(!ronda.error_apuesta && !ronda.error_resultados && !ronda.error_incompleto){
+                        puntaje += parseInt(ronda.apuestas[jugador.id].obtenerPuntaje(configuracion.modo)) || 0;
+                    }
                 });
                 return puntaje;
             }
